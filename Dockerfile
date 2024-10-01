@@ -3,9 +3,9 @@ FROM ubuntu:${UBUNTU_VERSION}
 
 ARG UBUNTU_VERSION
 ENV DOCKER_CHANNEL=stable \
-    DOCKER_VERSION=28.0.4 \
-    DOCKER_COMPOSE_VERSION=v2.34.0 \
-    BUILDX_VERSION=v0.21.0 \
+    DOCKER_VERSION=28.1.1 \
+    DOCKER_COMPOSE_VERSION=v2.35.1 \
+    BUILDX_VERSION=v0.23.0 \
     DEBUG=false
 
 # Install common dependencies
@@ -31,12 +31,12 @@ RUN set -eux; \
         *) echo >&2 "error: unsupported architecture ($arch)"; exit 1 ;; \
     esac && \
     wget -O docker.tgz "https://download.docker.com/linux/static/${DOCKER_CHANNEL}/${dockerArch}/docker-${DOCKER_VERSION}.tgz" && \
-    tar --extract --file docker.tgz --strip-components 1 --directory /usr/local/bin/ && \
+    tar --extract --file docker.tgz --strip-components 1 --directory /usr/bin/ && \
     rm docker.tgz && \
     wget -O docker-buildx "https://github.com/docker/buildx/releases/download/${BUILDX_VERSION}/buildx-${BUILDX_VERSION}.${buildx_arch}" && \
-    mkdir -p /usr/local/lib/docker/cli-plugins && \
+    mkdir -p /usr/lib/docker/cli-plugins && \
     chmod +x docker-buildx && \
-    mv docker-buildx /usr/local/lib/docker/cli-plugins/docker-buildx && \
+    mv docker-buildx /usr/lib/docker/cli-plugins/docker-buildx && \
     dockerd --version && \
     docker --version && \
     docker buildx version
@@ -53,10 +53,10 @@ VOLUME /var/lib/docker
 
 # Install Docker Compose
 RUN set -eux; \
-    curl -L "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && \
-    chmod +x /usr/local/bin/docker-compose && \
-    docker-compose version && \
-    ln -s /usr/local/bin/docker-compose /usr/local/lib/docker/cli-plugins/docker-compose
+    curl -L "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/lib/docker/cli-plugins/docker-compose && \
+    chmod +x /usr/lib/docker/cli-plugins/docker-compose && \
+    ln -s /usr/lib/docker/cli-plugins/docker-compose /usr/bin/docker-compose && \
+    docker-compose version
 
 ENTRYPOINT ["entrypoint.sh"]
 CMD ["bash"]
