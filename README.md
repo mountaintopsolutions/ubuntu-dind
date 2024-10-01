@@ -88,6 +88,11 @@ To use this Docker-in-Docker image securely, run the following command:
 docker run -it --runtime=sysbox-runc cruizba/ubuntu-dind
 ```
 
+### 3.2. Custom building a single version of this Image:
+```bash
+sudo docker build --build-arg UBUNTU_VERSION=24.04 . -f Dockerfile -t your-registry/ubuntu-dind:your_version
+```
+
 ## 4. Use cases
 
 ### 4.1. Environment to Test Docker Images
