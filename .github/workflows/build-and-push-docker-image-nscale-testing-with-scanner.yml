@@ -68,6 +68,8 @@ jobs:
         uses: aquasecurity/trivy-action@master
         env:
           TRIVY_DISABLE_VEX_NOTICE: "true" 
+          # This may need adjusted for the rocm images because of the size.
+          TRIVY_TIMEOUT: "10m"
         with:
           image-ref: '${{ vars.REGISTRY_URL }}/inferencing/ubuntu-dind-testing:${{ matrix.ubuntu_name }}-${{ github.sha }}'
           format: 'table'
@@ -83,14 +85,12 @@ jobs:
 #        uses: github/codeql-action/upload-sarif@v2
 #        with:
 #          sarif_file: 'trivy-results.sarif'
-
       - name: Push Docker image
-        if: success()
-        uses: docker/build-push-action@v6
-        with:
-          push: true  # Now push the image
-          tags: |
-            ${{ vars.REGISTRY_URL }}/inferencing/ubuntu-dind:${{ matrix.ubuntu_name }}-${{ env.CURRENT_VERSION }}
-            ${{ vars.REGISTRY_URL }}/inferencing/ubuntu-dind:${{ matrix.ubuntu_name }}-${{ env.CURRENT_VERSION }}-r${{ env.BUILD_NUMBER }}
-            ${{ vars.REGISTRY_URL }}/inferencing/ubuntu-dind:${{ matrix.ubuntu_name }}-${{ env.SHORT_SHA }}
-            ${{ matrix.ubuntu_version == env.LATEST_UBUNTU_VERSION && format('{0}/inferencing/ubuntu-dind:latest', vars.REGISTRY_URL) || '' }}
+        if: success()  # Only push if the previous steps succeeded
+        run: |
+          docker push ${{ vars.REGISTRY_URL }}/inferencing/ubuntu-dind-testing:${{ matrix.ubuntu_name }}-${{ github.sha }}
+          docker push ${{ vars.REGISTRY_URL }}/inferencing/ubuntu-dind-testing:${{ matrix.ubuntu_name }}-${{ env.SHORT_SHA }}
+          docker push ${{ vars.REGISTRY_URL }}/inferencing/ubuntu-dind-testing:${{ matrix.ubuntu_name }}-latest
+          if [ "${{ matrix.ubuntu_version }}" = "${{ env.LATEST_UBUNTU_VERSION }}" ]; then
+            docker push ${{ vars.REGISTRY_URL }}/inferencing/ubuntu-dind-testing:latest
+          fi
