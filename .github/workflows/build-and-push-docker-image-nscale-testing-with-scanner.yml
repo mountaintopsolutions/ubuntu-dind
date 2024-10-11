@@ -46,7 +46,7 @@ jobs:
           username: ${{ secrets.REGISTRY_PUSH_USER }}
           password: ${{ secrets.REGISTRY_PUSH_KEY }}
 
-      - name: Build and push
+      - name: Build Docker Image
         id: build
         uses: docker/build-push-action@v6
         with:
@@ -66,6 +66,8 @@ jobs:
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
+        env:
+          TRIVY_DISABLE_VEX_NOTICE: "true" 
         with:
           image-ref: '${{ vars.REGISTRY_URL }}/inferencing/ubuntu-dind-testing:${{ matrix.ubuntu_name }}-${{ github.sha }}'
           format: 'table'
@@ -83,11 +85,10 @@ jobs:
 #          sarif_file: 'trivy-results.sarif'
 
       - name: Push Docker image
+        if: success()
         uses: docker/build-push-action@v6
         with:
           push: true  # Now push the image
-          file: Dockerfile
-          platforms: linux/amd64
           tags: |
             ${{ vars.REGISTRY_URL }}/inferencing/ubuntu-dind:${{ matrix.ubuntu_name }}-${{ env.CURRENT_VERSION }}
             ${{ vars.REGISTRY_URL }}/inferencing/ubuntu-dind:${{ matrix.ubuntu_name }}-${{ env.CURRENT_VERSION }}-r${{ env.BUILD_NUMBER }}
