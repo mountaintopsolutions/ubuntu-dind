@@ -61,6 +61,9 @@ jobs:
             ${{ vars.REGISTRY_URL }}/inferencing/ubuntu-dind-testing:${{ matrix.ubuntu_name }}-${{ github.sha }}
             ${{ vars.REGISTRY_URL }}/inferencing/ubuntu-dind-testing:${{ matrix.ubuntu_name }}-${{ env.SHORT_SHA }}
             ${{ vars.REGISTRY_URL }}/inferencing/ubuntu-dind-testing:${{ matrix.ubuntu_name }}-latest
+            ${{ vars.REGISTRY_URL }}/inferencing/ubuntu-dind-testing:${{ matrix.ubuntu_version }}-${{ github.sha }}
+            ${{ vars.REGISTRY_URL }}/inferencing/ubuntu-dind-testing:${{ matrix.ubuntu_version }}-${{ env.SHORT_SHA }}
+            ${{ vars.REGISTRY_URL }}/inferencing/ubuntu-dind-testing:${{ matrix.ubuntu_version }}-latest
             ${{ matrix.ubuntu_version == env.LATEST_UBUNTU_VERSION && format('{0}/inferencing/ubuntu-dind-testing:latest', vars.REGISTRY_URL) || '' }}
           load: true  # Load the image into the local Docker daemon so trivy can scan it.
 
@@ -94,6 +97,9 @@ jobs:
           docker push ${{ vars.REGISTRY_URL }}/inferencing/ubuntu-dind-testing:${{ matrix.ubuntu_name }}-${{ github.sha }}
           docker push ${{ vars.REGISTRY_URL }}/inferencing/ubuntu-dind-testing:${{ matrix.ubuntu_name }}-${{ env.SHORT_SHA }}
           docker push ${{ vars.REGISTRY_URL }}/inferencing/ubuntu-dind-testing:${{ matrix.ubuntu_name }}-latest
+          docker push ${{ vars.REGISTRY_URL }}/inferencing/ubuntu-dind-testing:${{ matrix.ubuntu_name }}-${{ github.sha }}
+          docker push ${{ vars.REGISTRY_URL }}/inferencing/ubuntu-dind-testing:${{ matrix.ubuntu_version }}-${{ env.SHORT_SHA }}
+          docker push ${{ vars.REGISTRY_URL }}/inferencing/ubuntu-dind-testing:${{ matrix.ubuntu_version }}-latest
           if [ "${{ matrix.ubuntu_version }}" = "${{ env.LATEST_UBUNTU_VERSION }}" ]; then
             docker push ${{ vars.REGISTRY_URL }}/inferencing/ubuntu-dind-testing:latest
           fi
