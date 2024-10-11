@@ -34,7 +34,7 @@ jobs:
       - name: Login to DockerHub
         uses: docker/login-action@v3
         with:
-          registry: ${{ env.REGISTRY_URL }}
+          registry: ${{ REGISTRY_URL }}
           username: ${{ secrets.REGISTRY_PUSH_USER }}
           password: ${{ secrets.REGISTRY_PUSH_KEY }}
 
@@ -49,6 +49,6 @@ jobs:
           build-args: |
             UBUNTU_VERSION=${{ matrix.ubuntu_version }}
           tags: |
-            ${{ env.REGISTRY_URL }}/inferencing/ubuntu-dind-testing:${{ matrix.ubuntu_name }}-${{ github.sha}}
-            ${{ env.REGISTRY_URL }}/inferencing/ubuntu-dind-testing:${{ matrix.ubuntu_name }}-latest
-            ${{ matrix.ubuntu_version == env.LATEST_UBUNTU_VERSION && format('{0}/inferencing/ubuntu-dind-testing:latest', env.REGISTRY_URL) || '' }}
+            ${{ REGISTRY_URL }}/inferencing/ubuntu-dind-testing:${{ matrix.ubuntu_name }}-${{ github.sha}}
+            ${{ REGISTRY_URL }}/inferencing/ubuntu-dind-testing:${{ matrix.ubuntu_name }}-latest
+            ${{ matrix.ubuntu_version == env.LATEST_UBUNTU_VERSION && format('{0}/inferencing/ubuntu-dind-testing:latest', REGISTRY_URL) || '' }}
