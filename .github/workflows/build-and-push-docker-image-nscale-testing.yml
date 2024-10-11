@@ -28,7 +28,11 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
+        
+      - name: Get Short SHA
+        id: get_short_sha
+        run: echo "SHORT_SHA=$(echo $GITHUB_SHA | cut -c1-7)" >> $GITHUB_ENV
+      
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
@@ -54,5 +58,6 @@ jobs:
             UBUNTU_VERSION=${{ matrix.ubuntu_version }}
           tags: |
             ${{ vars.REGISTRY_URL }}/inferencing/ubuntu-dind-testing:${{ matrix.ubuntu_name }}-${{ github.sha}}
+            ${{ vars.REGISTRY_URL }}/inferencing/ubuntu-dind-testing:${{ matrix.ubuntu_name }}-${{ env.SHORT_SHA }}
             ${{ vars.REGISTRY_URL }}/inferencing/ubuntu-dind-testing:${{ matrix.ubuntu_name }}-latest
             ${{ matrix.ubuntu_version == env.LATEST_UBUNTU_VERSION && format('{0}/inferencing/ubuntu-dind-testing:latest', vars.REGISTRY_URL) || '' }}
