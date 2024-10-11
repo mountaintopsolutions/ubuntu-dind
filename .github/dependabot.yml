@@ -5,3 +5,7 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
+  - package-ecosystem: "docker"
+    directory: "/" # Adjust this if your Dockerfile is in a subdirectory
+    schedule:
+      interval: "daily" # Check for updates daily
