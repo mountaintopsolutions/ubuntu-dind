@@ -2,7 +2,13 @@ name: Build and push Docker image
 
 on:
   push:
+    paths:
+        - Dockerfile  # Only run if the Dockerfile has changed
+        - '**/Dockerfile'  # Include any Dockerfile in subdirectories
   pull_request:
+      paths:
+        - Dockerfile  # Only run if the Dockerfile has changed
+        - '**/Dockerfile'  # Include any Dockerfile in subdirectories
   workflow_dispatch:
 
 env:
