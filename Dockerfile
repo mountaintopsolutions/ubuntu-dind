@@ -55,8 +55,8 @@ VOLUME /var/lib/docker
 RUN set -eux; \
     curl -L "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/lib/docker/cli-plugins/docker-compose && \
     chmod +x /usr/lib/docker/cli-plugins/docker-compose && \
-    docker-compose version && \
-    ln -s /usr/lib/docker/cli-plugins/docker-compose /usr/bin/docker-compose
+    ln -s /usr/lib/docker/cli-plugins/docker-compose /usr/bin/docker-compose && \
+    docker-compose version
 
 ENTRYPOINT ["entrypoint.sh"]
 CMD ["bash"]
