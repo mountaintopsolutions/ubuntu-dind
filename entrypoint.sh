@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Start docker
-start-docker.sh
+sudo start-docker.sh
 
 # Execute specified command
 "$@"
