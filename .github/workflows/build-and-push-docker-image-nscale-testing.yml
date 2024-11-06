@@ -51,6 +51,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
+          sbom: true
           push: true
           file: Dockerfile
           ## Only build amd64 for now.
