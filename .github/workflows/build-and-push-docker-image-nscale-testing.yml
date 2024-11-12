@@ -51,7 +51,8 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
-          sbom: true
+          # TODO: Figure out why this sbom: true does not work / show up as sbom on harbor..
+          #sbom: true
           push: true
           file: Dockerfile
           ## Only build amd64 for now.
