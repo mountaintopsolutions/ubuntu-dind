@@ -71,9 +71,6 @@ jobs:
         uses: aquasecurity/trivy-action@master
         env:
           TRIVY_DISABLE_VEX_NOTICE: "true" 
-          ## Comment out the below if you do not want to use the cached databases.
-          TRIVY_SKIP_DB_UPDATE: true
-          TRIVY_SKIP_JAVA_DB_UPDATE: true
         with:
           image-ref: '${{ vars.REGISTRY_URL }}/inferencing/ubuntu-dind-testing:${{ matrix.ubuntu_name }}-${{ github.sha }}'
           format: 'table'
