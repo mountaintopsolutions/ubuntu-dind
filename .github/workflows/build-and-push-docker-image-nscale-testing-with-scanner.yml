@@ -78,6 +78,7 @@ jobs:
           timeout: '10m'
           exit-code: '1'
           ignore-unfixed: true
+          trivyignores: .trivyignore
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
 ## TODO: Test sarif after.

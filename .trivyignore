@@ -1,0 +1,6 @@
+# These 2 are in docker upstream, and only used internally in builders, no attack surface exists.
+# Ignore golang.org/x/crypto vulnerability
+CVE-2024-45337
+
+# Ignore golang.org/x/net vulnerability
+CVE-2024-45338
