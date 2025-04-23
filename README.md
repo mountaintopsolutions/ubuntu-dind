@@ -97,12 +97,8 @@ To use this Docker-in-Docker image in a more secure environment, run the followi
 docker run -it --runtime=sysbox-runc cruizba/ubuntu-dind
 ```
 
-<<<<<<< HEAD
 If you want to have a systemd environment, you can also use the `systemd-latest` tag:
 
-=======
-### 3.3. Custom building a single version of this Image:
->>>>>>> 88a4401 (docs: fix typo in bullet numbering)
 ```bash
 docker run -d --name ubuntu-dind --runtime=sysbox-runc cruizba/ubuntu-dind:systemd-latest
 docker exec -it ubuntu-dind bash
