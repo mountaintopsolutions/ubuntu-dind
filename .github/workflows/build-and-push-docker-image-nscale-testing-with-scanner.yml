@@ -3,10 +3,12 @@ name: Build and push Docker image for Testing Builds
 on:
   push:
     paths:
-        - Dockerfile  # Only run if the Dockerfile has changed
+        - Dockerfile  # run if the Dockerfile has changed
+        - Dockerfile.systemd  # run if the Dockerfile.systemd has changed
   pull_request:
       paths:
-        - Dockerfile  # Only run if the Dockerfile has changed
+        - Dockerfile  # run if the Dockerfile has changed
+        - Dockerfile.systemd  # run if the Dockerfile.systemd has changed
   workflow_dispatch:
 
 env:
