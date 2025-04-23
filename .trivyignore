@@ -1,9 +1,1 @@
-# These 2 are in docker upstream, and only used internally in builders, no attack surface exists.
-# Ignore golang.org/x/crypto vulnerability
-CVE-2024-45337
-
-# Ignore golang.org/x/net vulnerability
-CVE-2024-45338
-
-# Ignore CVE-2025-22869 till upstream docker-compose / docker-buildx fixes
-CVE-2025-22869
+# Should have no current vulns.
