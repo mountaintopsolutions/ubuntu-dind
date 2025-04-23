@@ -46,15 +46,14 @@ jobs:
           username: ${{ secrets.REGISTRY_PUSH_USER }}
           password: ${{ secrets.REGISTRY_PUSH_KEY }}
 
-      - name: Build Docker Image
-        id: build
+      # Build regular image
+      - name: Build Standard Docker Image
+        id: build_regular
         uses: docker/build-push-action@v6
         with:
           push: false
           file: Dockerfile
-          ## Only build amd64 for now.
           platforms: linux/amd64
-          #platforms: linux/amd64,linux/arm64
           build-args: |
             UBUNTU_VERSION=${{ matrix.ubuntu_version }}
           tags: |
@@ -65,39 +64,82 @@ jobs:
             ${{ vars.REGISTRY_URL }}/inferencing/ubuntu-dind-testing:${{ matrix.ubuntu_version }}-${{ env.SHORT_SHA }}
             ${{ vars.REGISTRY_URL }}/inferencing/ubuntu-dind-testing:${{ matrix.ubuntu_version }}-latest
             ${{ matrix.ubuntu_version == env.LATEST_UBUNTU_VERSION && format('{0}/inferencing/ubuntu-dind-testing:latest', vars.REGISTRY_URL) || '' }}
-          load: true  # Load the image into the local Docker daemon so trivy can scan it.
+          load: true
 
-      - name: Run Trivy vulnerability scanner
+      # Build systemd image
+      - name: Build Systemd Docker Image
+        id: build_systemd
+        uses: docker/build-push-action@v6
+        with:
+          push: false
+          file: Dockerfile.systemd
+          platforms: linux/amd64
+          build-args: |
+            UBUNTU_VERSION=${{ matrix.ubuntu_version }}
+          tags: |
+            ${{ vars.REGISTRY_URL }}/inferencing/ubuntu-dind-testing:${{ matrix.ubuntu_name }}-systemd-${{ github.sha }}
+            ${{ vars.REGISTRY_URL }}/inferencing/ubuntu-dind-testing:${{ matrix.ubuntu_name }}-systemd-${{ env.SHORT_SHA }}
+            ${{ vars.REGISTRY_URL }}/inferencing/ubuntu-dind-testing:${{ matrix.ubuntu_name }}-systemd-latest
+            ${{ vars.REGISTRY_URL }}/inferencing/ubuntu-dind-testing:${{ matrix.ubuntu_version }}-systemd-${{ github.sha }}
+            ${{ vars.REGISTRY_URL }}/inferencing/ubuntu-dind-testing:${{ matrix.ubuntu_version }}-systemd-${{ env.SHORT_SHA }}
+            ${{ vars.REGISTRY_URL }}/inferencing/ubuntu-dind-testing:${{ matrix.ubuntu_version }}-systemd-latest
+            ${{ matrix.ubuntu_version == env.LATEST_UBUNTU_VERSION && format('{0}/inferencing/ubuntu-dind-testing:systemd-latest', vars.REGISTRY_URL) || '' }}
+          load: true
+
+      # Scan Standard Docker Image with Trivy
+      - name: Scan Standard Docker Image with Trivy
         uses: aquasecurity/trivy-action@master
         env:
           TRIVY_DISABLE_VEX_NOTICE: "true" 
         with:
           image-ref: '${{ vars.REGISTRY_URL }}/inferencing/ubuntu-dind-testing:${{ matrix.ubuntu_name }}-${{ github.sha }}'
           format: 'table'
-          # This may need adjusted for the rocm images because of the size.
           timeout: '10m'
           exit-code: '1'
           ignore-unfixed: true
           trivyignores: .trivyignore
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
-## TODO: Test sarif after.
-#          format: 'sarif'
-#          output: 'trivy-results.sarif'
-#
-#      - name: Upload Trivy scan results to GitHub Security tab
-#        uses: github/codeql-action/upload-sarif@v2
-#        with:
-#          sarif_file: 'trivy-results.sarif'
-      - name: Push Docker image
-        if: success()  # Only push if the previous steps succeeded
+
+      # Scan systemd image
+      - name: Scan Systemd Image with Trivy
+        uses: aquasecurity/trivy-action@master
+        env:
+          TRIVY_DISABLE_VEX_NOTICE: "true" 
+        with:
+          image-ref: '${{ vars.REGISTRY_URL }}/inferencing/ubuntu-dind-testing:${{ matrix.ubuntu_name }}-systemd-${{ github.sha }}'
+          format: 'table'
+          timeout: '10m'
+          exit-code: '1'
+          ignore-unfixed: true
+          trivyignores: .trivyignore
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+
+      # Push Standard Docker image if scans pass
+      - name: Push Standard Docker image
+        if: success()
         run: |
           docker push ${{ vars.REGISTRY_URL }}/inferencing/ubuntu-dind-testing:${{ matrix.ubuntu_name }}-${{ github.sha }}
           docker push ${{ vars.REGISTRY_URL }}/inferencing/ubuntu-dind-testing:${{ matrix.ubuntu_name }}-${{ env.SHORT_SHA }}
           docker push ${{ vars.REGISTRY_URL }}/inferencing/ubuntu-dind-testing:${{ matrix.ubuntu_name }}-latest
-          docker push ${{ vars.REGISTRY_URL }}/inferencing/ubuntu-dind-testing:${{ matrix.ubuntu_name }}-${{ github.sha }}
+          docker push ${{ vars.REGISTRY_URL }}/inferencing/ubuntu-dind-testing:${{ matrix.ubuntu_version}}-${{ github.sha }}
           docker push ${{ vars.REGISTRY_URL }}/inferencing/ubuntu-dind-testing:${{ matrix.ubuntu_version }}-${{ env.SHORT_SHA }}
           docker push ${{ vars.REGISTRY_URL }}/inferencing/ubuntu-dind-testing:${{ matrix.ubuntu_version }}-latest
           if [ "${{ matrix.ubuntu_version }}" = "${{ env.LATEST_UBUNTU_VERSION }}" ]; then
             docker push ${{ vars.REGISTRY_URL }}/inferencing/ubuntu-dind-testing:latest
+          fi
+
+      # Push systemd image if scans pass
+      - name: Push Systemd Docker image
+        if: success()
+        run: |
+          docker push ${{ vars.REGISTRY_URL }}/inferencing/ubuntu-dind-testing:${{ matrix.ubuntu_name }}-systemd-${{ github.sha }}
+          docker push ${{ vars.REGISTRY_URL }}/inferencing/ubuntu-dind-testing:${{ matrix.ubuntu_name }}-systemd-${{ env.SHORT_SHA }}
+          docker push ${{ vars.REGISTRY_URL }}/inferencing/ubuntu-dind-testing:${{ matrix.ubuntu_name }}-systemd-latest
+          docker push ${{ vars.REGISTRY_URL }}/inferencing/ubuntu-dind-testing:${{ matrix.ubuntu_version }}-systemd-${{ github.sha }}
+          docker push ${{ vars.REGISTRY_URL }}/inferencing/ubuntu-dind-testing:${{ matrix.ubuntu_version }}-systemd-${{ env.SHORT_SHA }}
+          docker push ${{ vars.REGISTRY_URL }}/inferencing/ubuntu-dind-testing:${{ matrix.ubuntu_version }}-systemd-latest
+          if [ "${{ matrix.ubuntu_version }}" = "${{ env.LATEST_UBUNTU_VERSION }}" ]; then
+            docker push ${{ vars.REGISTRY_URL }}/inferencing/ubuntu-dind-testing:systemd-latest
           fi
