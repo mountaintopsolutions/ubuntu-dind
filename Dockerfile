@@ -1,11 +1,11 @@
-ARG UBUNTU_VERSION="24.04"
+ARG UBUNTU_VERSION="26.04"
 FROM ubuntu:${UBUNTU_VERSION}
 
 ARG UBUNTU_VERSION
 ENV DOCKER_CHANNEL=stable \
-    DOCKER_VERSION=28.3.2 \
-    DOCKER_COMPOSE_VERSION=v2.38.2 \
-    BUILDX_VERSION=v0.25.0 \
+    DOCKER_VERSION=29.5.3 \
+    DOCKER_COMPOSE_VERSION=v5.1.4 \
+    BUILDX_VERSION=v0.34.1 \
     DEBUG=false
 
 # Install common dependencies
@@ -14,13 +14,25 @@ RUN set -eux; \
     ca-certificates wget curl iptables supervisor \
     && rm -rf /var/lib/apt/lists/*
 
-# Set iptables-legacy for Ubuntu 22.04 and newer
+# Set iptables backend per Ubuntu version:
+#  - 22.04, 24.04: legacy backend (kept for compatibility)
+#  - 26.04+: nft backend (iptables-legacy can't initialise the nat table on
+#    iptables 1.8.11 shipped in 26.04)
 RUN set -eux; \
-    if [ "${UBUNTU_VERSION}" != "20.04" ]; then \
-    update-alternatives --set iptables /usr/sbin/iptables-legacy; \
-    fi
+    case "${UBUNTU_VERSION}" in \
+        20.04) ;; \
+        22.04|24.04) update-alternatives --set iptables /usr/sbin/iptables-legacy ;; \
+        *) update-alternatives --set iptables /usr/sbin/iptables-nft ;; \
+    esac
 
-# Install Docker and buildx
+# Install Docker
+RUN apt-get update && apt-get install -y wget curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && curl -fsSL https://get.docker.com -o get-docker.sh && sh get-docker.sh --version ${DOCKER_VERSION} \
+    && rm get-docker.sh \
+    && docker --version
+
+# Install buildx
 RUN set -eux; \
     arch="$(uname -m)"; \
     case "$arch" in \
@@ -30,15 +42,10 @@ RUN set -eux; \
         aarch64) dockerArch='aarch64' ; buildx_arch='linux-arm64' ;; \
         *) echo >&2 "error: unsupported architecture ($arch)"; exit 1 ;; \
     esac && \
-    wget -O docker.tgz "https://download.docker.com/linux/static/${DOCKER_CHANNEL}/${dockerArch}/docker-${DOCKER_VERSION}.tgz" && \
-    tar --extract --file docker.tgz --strip-components 1 --directory /usr/bin/ && \
-    rm docker.tgz && \
     wget -O docker-buildx "https://github.com/docker/buildx/releases/download/${BUILDX_VERSION}/buildx-${BUILDX_VERSION}.${buildx_arch}" && \
-    mkdir -p /usr/lib/docker/cli-plugins && \
+    mkdir -p /usr/local/lib/docker/cli-plugins && \
     chmod +x docker-buildx && \
-    mv docker-buildx /usr/lib/docker/cli-plugins/docker-buildx && \
-    dockerd --version && \
-    docker --version && \
+    mv docker-buildx /usr/local/lib/docker/cli-plugins/docker-buildx && \
     docker buildx version
 
 COPY modprobe start-docker.sh entrypoint.sh /usr/local/bin/
@@ -53,10 +60,10 @@ VOLUME /var/lib/docker
 
 # Install Docker Compose
 RUN set -eux; \
-    curl -L "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/lib/docker/cli-plugins/docker-compose && \
-    chmod +x /usr/lib/docker/cli-plugins/docker-compose && \
-    ln -s /usr/lib/docker/cli-plugins/docker-compose /usr/bin/docker-compose && \
-    docker-compose version
+    curl -L "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && \
+    chmod +x /usr/local/bin/docker-compose && \
+    docker-compose version && \
+    ln -s /usr/local/bin/docker-compose /usr/local/lib/docker/cli-plugins/docker-compose
 
 ENTRYPOINT ["entrypoint.sh"]
 CMD ["bash"]

@@ -1,14 +1,14 @@
 #!/bin/bash
 set -e
 
-DOCKER_VERSION="28.0.4"
-BUILD_NUMBER="1"
-LATEST_UBUNTU_VERSION="24.04"
+DOCKER_VERSION="29.5.3"
+BUILD_NUMBER="0"
+LATEST_UBUNTU_VERSION="26.04"
 
 declare -A ubuntu_versions=(
-  ["20.04"]="focal"
   ["22.04"]="jammy"
   ["24.04"]="noble"
+  ["26.04"]="resolute"
 )
 
 build_image() {

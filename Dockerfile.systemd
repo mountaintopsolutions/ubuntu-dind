@@ -1,12 +1,12 @@
 # This Dockerfile is based upon sysbox example images: https://github.com/nestybox/dockerfiles/
 # but with some modifications to have a more generic image.
-ARG UBUNTU_VERSION="24.04"
+ARG UBUNTU_VERSION="26.04"
 FROM ubuntu:${UBUNTU_VERSION}
 
 ARG UBUNTU_VERSION
-ENV DOCKER_VERSION=28.3.2 \
-    DOCKER_COMPOSE_VERSION=v2.38.2 \
-    BUILDX_VERSION=v0.25.0
+ENV DOCKER_VERSION=29.5.3 \
+    DOCKER_COMPOSE_VERSION=v5.1.4 \
+    BUILDX_VERSION=v0.34.1
 
 #
 # Systemd installation
@@ -41,7 +41,7 @@ RUN apt-get update &&                            \
        /usr/share/local/* &&                                          \
                                                                       \
     # Create default 'admin/admin' user
-    useradd --create-home --shell /bin/bash admin && echo "admin:admin" | chpasswd && adduser admin sudo
+    useradd --create-home --shell /bin/bash admin && echo "admin:admin" | chpasswd && usermod -aG sudo admin
 
 # Disable systemd services/units that are unnecessary within a container.
 RUN systemctl mask systemd-udevd.service \
@@ -51,11 +51,16 @@ RUN systemctl mask systemd-udevd.service \
                    sys-kernel-debug.mount \
                    sys-kernel-tracing.mount
 
-# Set iptables-legacy for Ubuntu 22.04 and newer
+# Set iptables backend per Ubuntu version:
+#  - 22.04, 24.04: legacy backend (kept for compatibility)
+#  - 26.04+: nft backend (iptables-legacy can't initialise the nat table on
+#    iptables 1.8.11 shipped in 26.04)
 RUN set -eux; \
-    if [ "${UBUNTU_VERSION}" != "20.04" ]; then \
-    update-alternatives --set iptables /usr/sbin/iptables-legacy; \
-    fi
+    case "${UBUNTU_VERSION}" in \
+        20.04) ;; \
+        22.04|24.04) update-alternatives --set iptables /usr/sbin/iptables-legacy ;; \
+        *) update-alternatives --set iptables /usr/sbin/iptables-nft ;; \
+    esac
 
 # Install Docker
 RUN apt-get update && apt-get install -y wget curl \
@@ -93,6 +98,18 @@ RUN curl --retry 5 --retry-max-time 40 \
 
 # Make use of stopsignal (instead of sigterm) to stop systemd containers.
 STOPSIGNAL SIGRTMIN+3
+
+# Mask services of no use inside the container
+# to avoid problems with --privileged flag
+# Source: https://forums.docker.com/t/docker-run-privileged-systemd-kills-all-tty-sessions/8610/3
+RUN systemctl mask \
+    systemd-logind.service getty.service getty.target
+
+# Volume /var/lib/docker to avoid storage driver issues
+VOLUME /var/lib/docker
+
+# Force overlay2 storage driver
+RUN mkdir -p /etc/docker && echo '{"storage-driver":"overlay2"}' > /etc/docker/daemon.json
 
 # Set systemd as entrypoint.
 ENTRYPOINT [ "/sbin/init", "--log-level=err" ]
