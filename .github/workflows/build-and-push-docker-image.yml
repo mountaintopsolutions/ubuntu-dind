@@ -1,8 +1,9 @@
 name: Build and push Docker image
 
 on:
-  release:
-    types: [published]
+  # Disabled: duplicate of build-and-push-docker-image-nscale-release.yml and targets
+  # cruizba/dockerhub/ghcr/quay with secrets this fork does not have. Kept only for
+  # manual runs / future upstream sync. Use the nscale-release workflow for releases.
   workflow_dispatch:
 
 env:
