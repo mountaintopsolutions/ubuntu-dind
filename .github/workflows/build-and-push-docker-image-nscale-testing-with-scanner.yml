@@ -51,7 +51,7 @@ jobs:
       # Build regular image
       - name: Build Standard Docker Image
         id: build_regular
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           push: false
           file: Dockerfile
@@ -71,7 +71,7 @@ jobs:
       # Build systemd image
       - name: Build Systemd Docker Image
         id: build_systemd
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           push: false
           file: Dockerfile.systemd
