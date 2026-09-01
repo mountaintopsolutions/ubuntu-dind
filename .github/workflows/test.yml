@@ -1,9 +1,9 @@
 name: Test images
 
 on:
-  push:
-    branches:
-      - master
+  # Disabled for this PR: this workflow was pulled in from the upstream sync and
+  # auto-ran on every push to master. Reduced to manual-only pending a separate PR
+  # to decide our CI strategy (nscale already has the testing-with-scanner workflow).
   workflow_dispatch:
 
 jobs:

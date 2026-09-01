@@ -26,6 +26,10 @@ on:
 
 jobs:
   version-bump:
+    # Disabled for this PR: upstream release automation pulled in from the sync;
+    # hardcodes cruizba/* tags and does not match our nscale release path. Guarded
+    # off pending a separate PR to decide whether to adapt or drop it.
+    if: ${{ false }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
