@@ -5,10 +5,14 @@ on:
     paths:
         - Dockerfile  # run if the Dockerfile has changed
         - Dockerfile.systemd  # run if the Dockerfile.systemd has changed
+        - .trivyignore  # re-scan if the ignore list changed
+        - .github/workflows/build-and-push-docker-image-nscale-testing-with-scanner.yml
   pull_request:
       paths:
         - Dockerfile  # run if the Dockerfile has changed
         - Dockerfile.systemd  # run if the Dockerfile.systemd has changed
+        - .trivyignore  # re-scan if the ignore list changed
+        - .github/workflows/build-and-push-docker-image-nscale-testing-with-scanner.yml
   workflow_dispatch:
 
 env:
