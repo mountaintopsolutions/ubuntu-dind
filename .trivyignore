@@ -1,1 +1,8 @@
-# Should have no current vulns.
+# Suppressed vulnerabilities. Keep this list minimal and dated.
+#
+# CVE-2026-56854 (CRITICAL, golang.org/x/crypto/ssh, fixed in x/crypto 0.55.0):
+# present only inside the upstream docker / buildx / docker-compose Go binaries,
+# which vendor x/crypto 0.48-0.54. Not patchable from this repo. Remove once
+# Docker republishes its 29.5.3 (or later) binaries built against x/crypto
+# >= 0.55.0. Added 2026-09-01.
+CVE-2026-56854
