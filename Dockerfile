@@ -15,13 +15,14 @@ RUN set -eux; \
     && rm -rf /var/lib/apt/lists/*
 
 # Set iptables backend per Ubuntu version:
-#  - 22.04, 24.04: legacy backend (kept for compatibility)
-#  - 26.04+: nft backend (iptables-legacy can't initialise the nat table on
-#    iptables 1.8.11 shipped in 26.04)
+#  - 20.04: leave the image default (legacy)
+#  - 22.04+: nft backend. The legacy backend needs the kernel's ip_tables
+#    module, which nftables-only hosts (modern kernels) don't provide, so
+#    dockerd fails to create the NAT chain. nft targets nf_tables, which those
+#    kernels do have. (26.04 additionally can't init the nat table on legacy.)
 RUN set -eux; \
     case "${UBUNTU_VERSION}" in \
         20.04) ;; \
-        22.04|24.04) update-alternatives --set iptables /usr/sbin/iptables-legacy ;; \
         *) update-alternatives --set iptables /usr/sbin/iptables-nft ;; \
     esac
 
